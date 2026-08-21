@@ -1,0 +1,450 @@
+{
+  "project": "DrugRep HCC RNA-seq downstream analysis",
+  "started_at": "2026-08-20T19:09:44+08:00",
+  "completed_at": "2026-08-20T19:14:23+08:00",
+  "status": "completed",
+  "source_archive": {
+    "path": "/media/zzh/researchdata/seenHCC/Phase01_aetherCell/HCCDrug_RNAseq_core_tables_20260724_133204.tar.gz",
+    "bytes": 32356599,
+    "sha256": "fe2823b0eb9374d8e12cc8c33136c426f080c591cef735f20d5d17bb0dd3d52d",
+    "checksums_verified": 52,
+    "manifest_files_verified": 51,
+    "reused_existing_extraction": true
+  },
+  "dataset_directory": "data/raw/mentor_preanalysis_20260724",
+  "input_profile": {
+    "samples": [
+      "NC.1",
+      "NC.2",
+      "NC.3",
+      "Sora.1",
+      "Sora.2",
+      "Sora.3",
+      "Spi.1",
+      "Spi.2",
+      "Spi.3",
+      "Teg.1",
+      "Teg.2",
+      "Teg.3"
+    ],
+    "group_counts": {
+      "NC": 3,
+      "Sora": 3,
+      "Spi": 3,
+      "Teg": 3
+    },
+    "quantifier_profile": {
+      "RSEM": {
+        "genes": 61533,
+        "samples": 12,
+        "all_zero_genes": 31899,
+        "library_sizes": {
+          "NC.1": 17206974,
+          "NC.2": 16986287,
+          "NC.3": 17082967,
+          "Sora.1": 17423110,
+          "Sora.2": 15938875,
+          "Sora.3": 16654547,
+          "Spi.1": 16002045,
+          "Spi.2": 15962978,
+          "Spi.3": 16983026,
+          "Teg.1": 16607375,
+          "Teg.2": 19124314,
+          "Teg.3": 17310943
+        }
+      },
+      "Salmon": {
+        "genes": 61533,
+        "samples": 12,
+        "all_zero_genes": 32089,
+        "library_sizes": {
+          "NC.1": 17206561,
+          "NC.2": 16985716,
+          "NC.3": 17056177,
+          "Sora.1": 17392368,
+          "Sora.2": 15914371,
+          "Sora.3": 16630730,
+          "Spi.1": 15978414,
+          "Spi.2": 15935075,
+          "Spi.3": 16951698,
+          "Teg.1": 16582621,
+          "Teg.2": 19090098,
+          "Teg.3": 17281588
+        }
+      },
+      "STAR": {
+        "genes": 61533,
+        "samples": 12,
+        "all_zero_genes": 26510,
+        "library_sizes": {
+          "NC.1": 16569860,
+          "NC.2": 16361640,
+          "NC.3": 16391869,
+          "Sora.1": 16875496,
+          "Sora.2": 15538661,
+          "Sora.3": 16189981,
+          "Spi.1": 15530024,
+          "Spi.2": 15539877,
+          "Spi.3": 16401016,
+          "Teg.1": 16104934,
+          "Teg.2": 18495113,
+          "Teg.3": 16723254
+        }
+      }
+    }
+  },
+  "parameters": {
+    "project": "DrugRep HCC RNA-seq downstream analysis",
+    "archive_destination": "data/raw/mentor_preanalysis_20260724",
+    "primary_quantifier": "RSEM",
+    "quantifiers": [
+      "RSEM",
+      "Salmon",
+      "STAR"
+    ],
+    "groups": [
+      "NC",
+      "Sora",
+      "Spi",
+      "Teg"
+    ],
+    "contrasts": {
+      "SoravsNC": {
+        "treatment": "Sora",
+        "control": "NC"
+      },
+      "SpivsNC": {
+        "treatment": "Spi",
+        "control": "NC"
+      },
+      "TegvsNC": {
+        "treatment": "Teg",
+        "control": "NC"
+      }
+    },
+    "deg": {
+      "padj": 0.05,
+      "abs_log2fc": 1.0
+    },
+    "qc": {
+      "top_variable_genes": 500,
+      "outlier_correlation_floor": 0.95
+    },
+    "gsea": {
+      "seed": 20260820,
+      "permutations": 1000,
+      "threads": 4,
+      "min_size": 15,
+      "max_size": 500,
+      "main_fdr": 0.05,
+      "exploratory_fdr": 0.25
+    },
+    "mapping": {
+      "minimum_coverage": 0.85
+    },
+    "gene_sets": [
+      "MSigDB_Hallmark_2020",
+      "KEGG_2021_Human",
+      "Reactome_2022",
+      "GO_Biological_Process_2025"
+    ],
+    "hallmark_library": "MSigDB_Hallmark_2020"
+  },
+  "references": [
+    {
+      "type": "gene_mapping",
+      "name": "Ensembl human gene mapping",
+      "source": "cached Ensembl BioMart snapshot",
+      "retrieved_or_verified_at": "2026-08-20T19:09:44+08:00",
+      "path": "data/reference/ensembl_human_gene_map.tsv",
+      "rows": 78691,
+      "sha256": "f7f7666b1fc5fec517b5cf48c64821b0c9dcf7dc2eab238ee35b344295b4dd04",
+      "license_note": "GENCODE/Ensembl annotation; review upstream data-use and attribution terms before redistribution."
+    },
+    {
+      "type": "gene_set_library",
+      "requested_name": "MSigDB_Hallmark_2020",
+      "selected_name": "MSigDB_Hallmark_2020",
+      "source": "Enrichr library service via GSEApy",
+      "retrieved_or_verified_at": "2026-08-20T19:09:44+08:00",
+      "path": "data/reference/gmt/MSigDB_Hallmark_2020.gmt",
+      "gene_set_count": 50,
+      "sha256": "cf7bee5d00eef254284f783bd5ee108623a6b52b734adb799aa45b0f61d89620",
+      "license_note": "Terms inherit from each upstream gene-set source; review before redistribution."
+    },
+    {
+      "type": "gene_set_library",
+      "requested_name": "KEGG_2021_Human",
+      "selected_name": "KEGG_2021_Human",
+      "source": "Enrichr library service via GSEApy",
+      "retrieved_or_verified_at": "2026-08-20T19:09:44+08:00",
+      "path": "data/reference/gmt/KEGG_2021_Human.gmt",
+      "gene_set_count": 320,
+      "sha256": "2c3004c4f68faa66c32e8720b4faf751f3383a0295bedbe894aacc26607ef8c6",
+      "license_note": "Terms inherit from each upstream gene-set source; review before redistribution."
+    },
+    {
+      "type": "gene_set_library",
+      "requested_name": "Reactome_2022",
+      "selected_name": "Reactome_2022",
+      "source": "Enrichr library service via GSEApy",
+      "retrieved_or_verified_at": "2026-08-20T19:09:44+08:00",
+      "path": "data/reference/gmt/Reactome_2022.gmt",
+      "gene_set_count": 1816,
+      "sha256": "d38def9c01cdf136c66494a22de55921f917f4b22b0fc5ee7ddeaabb2f90d2e2",
+      "license_note": "Terms inherit from each upstream gene-set source; review before redistribution."
+    },
+    {
+      "type": "gene_set_library",
+      "requested_name": "GO_Biological_Process_2025",
+      "selected_name": "GO_Biological_Process_2025",
+      "source": "Enrichr library service via GSEApy",
+      "retrieved_or_verified_at": "2026-08-20T19:09:44+08:00",
+      "path": "data/reference/gmt/GO_Biological_Process_2025.gmt",
+      "gene_set_count": 5341,
+      "sha256": "1e7257a53615225febf5579595f399676f354f72dcb6f676becaae5cce3b6dd7",
+      "license_note": "Terms inherit from each upstream gene-set source; review before redistribution."
+    }
+  ],
+  "mapping_minimum_coverage": 0.986181910098159,
+  "software": {
+    "python": "3.10.14",
+    "platform": "Linux-6.11.0-26-generic-x86_64-with-glibc2.39",
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "scipy": "1.15.3",
+    "scikit-learn": "1.7.2",
+    "statsmodels": "0.14.6",
+    "matplotlib": "3.10.8",
+    "seaborn": "0.13.2",
+    "gseapy": "1.3.0"
+  },
+  "warnings": [
+    "FASTQ-level QC and alignment reports were not included in the supplied core-table archive.",
+    "The mentor pipeline's final DEG annotation-combination step failed; core count and DE tables passed archive checks.",
+    "Spi and Teg are coded labels because full compound identities were not supplied.",
+    "No tumor-versus-normal HCC signature was supplied; disease reversal and therapeutic efficacy are out of scope."
+  ],
+  "outputs": [
+    {
+      "path": "data/processed/differential_expression/RSEM_DESeq2_SoravsNC_mapped.tsv",
+      "bytes": 2713235,
+      "sha256": "f2493d9c78436a706cf87a9bfda9edf700e08b47c8ac34f8cef8844af9faf8c6"
+    },
+    {
+      "path": "data/processed/differential_expression/RSEM_DESeq2_SpivsNC_mapped.tsv",
+      "bytes": 2622919,
+      "sha256": "f49b8221d106b7f0e76126013dc38f3a64cae9b5d04ac3c92d0e433eda31bd8e"
+    },
+    {
+      "path": "data/processed/differential_expression/RSEM_DESeq2_TegvsNC_mapped.tsv",
+      "bytes": 2654755,
+      "sha256": "d91df3f425053d9a342567317b0f59b732c3c35baf617b29c96c9db16670c91c"
+    },
+    {
+      "path": "data/processed/differential_expression/STAR_DESeq2_SoravsNC_mapped.tsv",
+      "bytes": 3136414,
+      "sha256": "4b7d0d021cd15d4314d80457b14e95b426731fc90188c8fe1f059bdd8b4e5f7a"
+    },
+    {
+      "path": "data/processed/differential_expression/STAR_DESeq2_SpivsNC_mapped.tsv",
+      "bytes": 3019381,
+      "sha256": "de185e8e749ace82144d99da3d1652f9607d83ad68e478f664bd17d990a2e2e6"
+    },
+    {
+      "path": "data/processed/differential_expression/STAR_DESeq2_TegvsNC_mapped.tsv",
+      "bytes": 3047150,
+      "sha256": "c11aa80d06047be5972ec41746e523dfb4663bf32f577d94491ab5c181cd7b13"
+    },
+    {
+      "path": "data/processed/differential_expression/Salmon_DESeq2_SoravsNC_mapped.tsv",
+      "bytes": 2716740,
+      "sha256": "5d1441175dec004def01c42713a27af3e75e9db426f81d6c0e95871af76571b6"
+    },
+    {
+      "path": "data/processed/differential_expression/Salmon_DESeq2_SpivsNC_mapped.tsv",
+      "bytes": 2632935,
+      "sha256": "b2fedb32bf51f724d912d6235c3d1b79762aabd3c91c4ab783d72f379d2a089d"
+    },
+    {
+      "path": "data/processed/differential_expression/Salmon_DESeq2_TegvsNC_mapped.tsv",
+      "bytes": 2658007,
+      "sha256": "de90cb4a5dbd9b0b6e70c915874c08c83a44635387f2a1cedaa88ecbe207a4ef"
+    },
+    {
+      "path": "data/processed/idep/RSEM_raw_counts_idep.tsv",
+      "bytes": 2806898,
+      "sha256": "0a35e8b30dcfb7830ac666d46e0409baa7b7c0a5748a145dc6567dd32485b690"
+    },
+    {
+      "path": "data/processed/idep/sample_design_idep.tsv",
+      "bytes": 137,
+      "sha256": "3fca67312fa48ecef123fbf8460a15c1167c7a2e93fccde3ad32fd07bb756182"
+    },
+    {
+      "path": "data/processed/ranked/RSEM_SoravsNC.rnk",
+      "bytes": 529997,
+      "sha256": "9153d98d29d2787c622134655aba640cb99c6d47558449c4ef4a72b8af4efc68"
+    },
+    {
+      "path": "data/processed/ranked/RSEM_SpivsNC.rnk",
+      "bytes": 533341,
+      "sha256": "032b9c484360c2a85133fa4367aada76a91f8777f56d9b759bf67b4ee4038c57"
+    },
+    {
+      "path": "data/processed/ranked/RSEM_TegvsNC.rnk",
+      "bytes": 532050,
+      "sha256": "dbeca2b21e6a3cc06bad7dd1bd2c9cf952d9b1288fe378b11d8130a9e5c0020d"
+    },
+    {
+      "path": "data/processed/ranked/STAR_SoravsNC.rnk",
+      "bytes": 615753,
+      "sha256": "4e901a889a9a08a45748261338a7464d93b10970e7ba167c63b8e71b15f2056e"
+    },
+    {
+      "path": "data/processed/ranked/STAR_SpivsNC.rnk",
+      "bytes": 618994,
+      "sha256": "be09b14acb5896d32a76be9477078cfee5afad7b6a553fac0d96e57656123cbc"
+    },
+    {
+      "path": "data/processed/ranked/STAR_TegvsNC.rnk",
+      "bytes": 617875,
+      "sha256": "286f0a1abd5bdaa85bc6c3e28a2f9b9845d86776e96cf16bb6ba029405cf7180"
+    },
+    {
+      "path": "data/processed/ranked/Salmon_SoravsNC.rnk",
+      "bytes": 530908,
+      "sha256": "c8b8998c865d1d7bcc8943d5f59ebb8b9895c98d19fa6aa5bce83bdcdc7cd915"
+    },
+    {
+      "path": "data/processed/ranked/Salmon_SpivsNC.rnk",
+      "bytes": 534221,
+      "sha256": "5bc44c19cbde721851ee07c7a4a33271b02ed39311155f14adb8109e37a023c1"
+    },
+    {
+      "path": "data/processed/ranked/Salmon_TegvsNC.rnk",
+      "bytes": 532932,
+      "sha256": "c385a11f2adabdd04143239ba238c92d3642b6f35f50b595150de6c4c1b0c772"
+    },
+    {
+      "path": "reports/report_20260820-1855_rnaseq_downstream_analysis.md",
+      "bytes": 10142,
+      "sha256": "ed0fadd61768a08dd68854c8dac6dc809cee854e9197cb3c1864a1793825a854"
+    },
+    {
+      "path": "results/figures/01_qc_overview.pdf",
+      "bytes": 53731,
+      "sha256": "eb93b0ff7753ddd0f828f697ec1e6567014dafa93669d04e4363ea61ae9d2575"
+    },
+    {
+      "path": "results/figures/01_qc_overview.png",
+      "bytes": 316202,
+      "sha256": "7e23715589c470e451965d7bfd4c1d2bacfa0d52b33bdc9d349a9f9a384e4dce"
+    },
+    {
+      "path": "results/figures/02_differential_expression.pdf",
+      "bytes": 788005,
+      "sha256": "03a60ae19bb042f71239cce8a0f0b06defc41e3228197898255a532f31689d43"
+    },
+    {
+      "path": "results/figures/02_differential_expression.png",
+      "bytes": 510270,
+      "sha256": "7ade87b3cfbae28ab68fdb032399876f83111ab10ec0bfd779373a5b4b68befe"
+    },
+    {
+      "path": "results/figures/03_concordance.pdf",
+      "bytes": 643465,
+      "sha256": "d3269c8ae8ab3ee2f36e07dea5acd144ba63e0ae8a1dd47a325be54b729774cf"
+    },
+    {
+      "path": "results/figures/03_concordance.png",
+      "bytes": 456232,
+      "sha256": "33caf61b38d2d82254212ca583a4ee1ddc4e529ef1e66fc5241765cd106a249e"
+    },
+    {
+      "path": "results/figures/04_pathway_enrichment.pdf",
+      "bytes": 37924,
+      "sha256": "5eb0d6ab34d7104cb7baf0657176657bad221d85cfebc59624c84b9e747c81f9"
+    },
+    {
+      "path": "results/figures/04_pathway_enrichment.png",
+      "bytes": 566991,
+      "sha256": "1d6180e312957fb07ccea605afd29e9194ad6f99f0932095eabc9bd159ce6b80"
+    },
+    {
+      "path": "results/tables/deg_summary.tsv",
+      "bytes": 481,
+      "sha256": "8086cc9cfa8b9503a09a0afd7a794685bdc72178f1e44fac1047575a6aaa1533"
+    },
+    {
+      "path": "results/tables/gsea_all.tsv",
+      "bytes": 3067546,
+      "sha256": "5605353cbb0eb52efe2d602483d09b328716e3b1646b70660173d5b2981bc374"
+    },
+    {
+      "path": "results/tables/gsea_significant_leading_edges.tsv",
+      "bytes": 622793,
+      "sha256": "5b85ee02070aa3528353f8656196b65c18156d8140fb551514b45afd0bc77015"
+    },
+    {
+      "path": "results/tables/hallmark_sensitivity.tsv",
+      "bytes": 371,
+      "sha256": "4b0cccc21f0ef2f13f191effdef9375ca1af5b8f3501cac48bc4bdb4d3ab355e"
+    },
+    {
+      "path": "results/tables/library_sizes.tsv",
+      "bytes": 387,
+      "sha256": "eb4412b60a9355678039e3a1cf097c6e697f38f2be77ef68e997be7115955b7e"
+    },
+    {
+      "path": "results/tables/mapping_summary.tsv",
+      "bytes": 548,
+      "sha256": "af561c96cf2117c5ea17dfed71d1b07bc21f676edbe3fab50513fded9d8d69e2"
+    },
+    {
+      "path": "results/tables/ora_all.tsv",
+      "bytes": 1048025,
+      "sha256": "95b897da3e37bbff8bc3120beb72eae1b8128902973d86f480beeb3f514e7529"
+    },
+    {
+      "path": "results/tables/pathway_similarity.tsv",
+      "bytes": 173,
+      "sha256": "8d465275d4b9ce9be528905270ef8d0b65b8d1dd9c6a42744362503db5ee5ab5"
+    },
+    {
+      "path": "results/tables/pca_scores.tsv",
+      "bytes": 1076,
+      "sha256": "78522e280b80c0c1120a8b0b4e60133480152e456e650e0deb483944e42cccfd"
+    },
+    {
+      "path": "results/tables/preanalysis_inventory.tsv",
+      "bytes": 932,
+      "sha256": "d63f78682c9f54a1fd976d27869015dfab145bd3757443bab40f40f7a84bb342"
+    },
+    {
+      "path": "results/tables/robustness_summary.tsv",
+      "bytes": 1269,
+      "sha256": "2e5d76ebfd04c2bf5b93dd2ab95a99cdde9ac0d11e2eedad970b6c9f08c0c9c3"
+    },
+    {
+      "path": "results/tables/sample_correlations.tsv",
+      "bytes": 2687,
+      "sha256": "1e8990846cbf6886dfcac7ac5339bbe3138db22971db12e0bbcf46645909f21a"
+    },
+    {
+      "path": "results/tables/sample_outlier_flags.tsv",
+      "bytes": 481,
+      "sha256": "7c24d5202111a190e9986b1c3422a4c02fc20134b80aff1e40594908aa6b31ac"
+    },
+    {
+      "path": "results/tables/top_genes_by_wald_stat.tsv",
+      "bytes": 6093,
+      "sha256": "0cb219e7f1c87474edb32fcb569309add7b305577b2bb56c467c62ca9fdcc50c"
+    },
+    {
+      "path": "results/tables/treatment_similarity.tsv",
+      "bytes": 395,
+      "sha256": "471381c7854e44cbea190166753169b6654553c8f6f26266c6d13ed515cd8646"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+# Local environments and caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.cache/
+
+# Large or recoverable data
+data/raw/*
+!data/raw/.gitkeep
+data/reference/*
+!data/reference/.gitkeep
+
+# Transient analysis files
+*.log
+*.tmp
+results/.work/
+
+# Editor and operating-system noise
+.DS_Store
+.idea/
+.vscode/
+

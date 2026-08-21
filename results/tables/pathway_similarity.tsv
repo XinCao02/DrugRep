@@ -1,0 +1,4 @@
+contrast_a	contrast_b	nes_spearman	common_pathways
+SoravsNC	SpivsNC	0.36636295433781507	3550
+SoravsNC	TegvsNC	0.7224741112022782	3550
+SpivsNC	TegvsNC	0.238713706625649	3550

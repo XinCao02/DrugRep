@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>HCC 候选药物 RNA-seq 下游分析</title>
+  <style>
+    :root {
+      --bg: #f5f2ea;
+      --paper: #ffffff;
+      --navy: #17324d;
+      --teal: #2e7d75;
+      --gold: #c99738;
+      --blue: #4e79a7;
+      --brick: #a95a43;
+      --ink: #1f2933;
+      --muted: #66737c;
+      --line: #d8ded9;
+      --pale-teal: #e3efec;
+      --pale-gold: #f3e8cf;
+      --pale-blue: #e8eff5;
+      --pale-red: #f3e6e1;
+      --ease: cubic-bezier(.22, .78, .28, 1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #182229;
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", system-ui, sans-serif;
+    }
+
+    button { font: inherit; }
+
+    #hcc-rnaseq-deck {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 18% 20%, rgba(46,125,117,.10), transparent 34%),
+        #182229;
+      user-select: none;
+    }
+
+    .deck-shell {
+      position: relative;
+      width: min(100vw, 177.7778vh);
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: var(--bg);
+      box-shadow: 0 28px 90px rgba(0,0,0,.34);
+      isolation: isolate;
+    }
+
+    .deck-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .23;
+      background-image: radial-gradient(rgba(23,50,77,.16) .55px, transparent .55px);
+      background-size: 18px 18px;
+      mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+      z-index: 0;
+    }
+
+    .progress-track {
+      position: absolute;
+      inset: 0 0 auto;
+      height: 4px;
+      background: rgba(23,50,77,.08);
+      z-index: 30;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 16.6667%;
+      background: var(--gold);
+      transform-origin: left;
+      transition: width .55s var(--ease);
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: clamp(8px, 1.2vw, 20px);
+      padding: clamp(28px, 3.5vw, 62px) clamp(34px, 4vw, 72px) clamp(28px, 3vw, 52px);
+      opacity: 0;
+      visibility: hidden;
+      transform: translate3d(3.2%, 0, 0) scale(.994);
+      transition: opacity .44s ease, transform .58s var(--ease), visibility 0s linear .58s;
+      pointer-events: none;
+    }
+
+    .slide.before { transform: translate3d(-3.2%, 0, 0) scale(.994); }
+    .slide.active {
+      z-index: 2;
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition-delay: 0s;
+      pointer-events: auto;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+
+    .slide.active .reveal {
+      animation: rise .68s var(--ease) both;
+      animation-delay: var(--delay, 0ms);
+    }
+
+    .slide.active .image-reveal img {
+      animation: imageIn .82s var(--ease) both;
+      animation-delay: var(--delay, 180ms);
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    @keyframes imageIn {
+      from { opacity: 0; transform: scale(.975); clip-path: inset(0 8% 0 0); }
+      to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
+    }
+
+    @keyframes drawLine { to { stroke-dashoffset: 0; } }
+    @keyframes pulseHub {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(46,125,117,.18); }
+      50% { box-shadow: 0 0 0 14px rgba(46,125,117,0); }
+    }
+
+    .slide-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: clamp(8px, .8vw, 14px);
+    }
+
+    .eyebrow {
+      display: flex;
+      gap: .7em;
+      align-items: center;
+      margin-bottom: .45em;
+      color: var(--muted);
+      font-size: clamp(8px, .62vw, 11px);
+      font-weight: 700;
+      letter-spacing: .12em;
+    }
+
+    .eyebrow .index { color: var(--gold); }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      color: var(--navy);
+      font-size: clamp(32px, 3.3vw, 60px);
+      line-height: 1.12;
+      letter-spacing: -.035em;
+    }
+
+    h2 {
+      color: var(--navy);
+      font-size: clamp(22px, 2.05vw, 37px);
+      line-height: 1.18;
+      letter-spacing: -.025em;
+    }
+
+    h3 {
+      color: var(--navy);
+      font-size: clamp(12px, 1.05vw, 19px);
+      line-height: 1.35;
+    }
+
+    .kicker {
+      color: var(--teal);
+      font-size: clamp(8px, .75vw, 13px);
+      font-weight: 700;
+      letter-spacing: .04em;
+      padding-bottom: .18em;
+      white-space: nowrap;
+    }
+
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      font-size: clamp(7px, .55vw, 10px);
+      letter-spacing: .04em;
+    }
+
+    .panel {
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(216,222,217,.95);
+      border-radius: clamp(8px, .8vw, 14px);
+    }
+
+    .muted { color: var(--muted); }
+    .teal { color: var(--teal); }
+    .brick { color: var(--brick); }
+    .strong { font-weight: 700; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.45em;
+      padding: .45em .95em;
+      border-radius: .55em;
+      color: var(--navy);
+      font-size: clamp(9px, .82vw, 14px);
+      font-weight: 700;
+    }
+
+    .tag.blue { background: var(--pale-blue); }
+    .tag.gold { background: var(--pale-gold); }
+    .tag.teal-bg { background: var(--pale-teal); }
+    .tag.gray { background: #ecefed; }
+
+    figure { margin: 0; }
+    figure img { display: block; width: 100%; height: 100%; object-fit: contain; }
+    figcaption { color: var(--muted); font-size: clamp(7px, .58vw, 10px); line-height: 1.45; }
+
+    /* Slide 1 */
+    .hero-slide {
+      grid-template-rows: 1fr auto;
+      padding-top: clamp(36px, 5vw, 88px);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr .82fr;
+      gap: clamp(28px, 5vw, 90px);
+      align-items: center;
+    }
+
+    .hero-rule { width: 4.3em; height: 5px; background: var(--gold); margin-bottom: 1.1em; }
+    .hero-kicker { color: var(--muted); font-size: clamp(8px, .7vw, 12px); letter-spacing: .15em; font-weight: 700; }
+    .hero-title { margin-top: .65em; }
+    .hero-title .accent { display: block; color: var(--teal); margin-top: .14em; }
+    .hero-subtitle { margin-top: 1.25em; max-width: 42em; font-size: clamp(11px, 1.2vw, 21px); line-height: 1.65; }
+    .hero-tags { display: flex; gap: .8em; margin-top: 2em; }
+    .boundary { margin-top: 2em; color: var(--brick); font-size: clamp(9px, .78vw, 14px); line-height: 1.55; }
+
+    .orbit-board {
+      position: relative;
+      min-height: clamp(290px, 31vw, 520px);
+      padding: 8% 8%;
+      overflow: hidden;
+    }
+
+    .orbit-title { position: relative; z-index: 3; font-size: clamp(12px, 1.05vw, 19px); color: var(--navy); font-weight: 700; }
+    .orbit-lines { position: absolute; inset: 14% 8% 7%; width: 84%; height: 79%; z-index: 1; }
+    .orbit-lines line { stroke: #b7c1be; stroke-width: 1.5; stroke-dasharray: 220; stroke-dashoffset: 220; }
+    .active .orbit-lines line { animation: drawLine .85s var(--ease) forwards; animation-delay: calc(430ms + var(--line-index) * 100ms); }
+    .orbit-node, .orbit-hub { position: absolute; z-index: 2; display: grid; place-items: center; border-radius: .7em; font-weight: 700; color: var(--navy); }
+    .orbit-node { left: 11%; width: 24%; height: 10%; font-size: clamp(9px, .8vw, 14px); }
+    .orbit-node.n1 { top: 29%; background: #ecefed; }
+    .orbit-node.n2 { top: 44%; background: var(--pale-gold); }
+    .orbit-node.n3 { top: 59%; background: var(--pale-blue); }
+    .orbit-node.n4 { top: 74%; background: var(--pale-teal); }
+    .orbit-hub { right: 11%; top: 44%; width: 38%; height: 29%; text-align: center; background: var(--pale-teal); color: var(--teal); font-size: clamp(12px, 1.05vw, 19px); line-height: 1.55; }
+    .active .orbit-hub { animation: pulseHub 2.4s ease-in-out 1.2s infinite; }
+
+    /* Slide 2 */
+    .outline-layout { display: grid; grid-template-columns: .72fr 1.65fr; gap: clamp(22px, 3vw, 52px); min-height: 0; }
+    .outline-list { display: grid; align-content: center; gap: .45em; }
+    .outline-item { display: grid; grid-template-columns: 2.1em 1fr; column-gap: .7em; padding: .75em 0; border-bottom: 1px solid var(--line); }
+    .outline-item:last-child { border: 0; }
+    .outline-num { color: var(--gold); font-size: clamp(9px, .75vw, 13px); font-weight: 800; padding-top: .2em; }
+    .outline-label { color: var(--navy); font-size: clamp(13px, 1.25vw, 22px); font-weight: 700; }
+    .outline-desc { margin-top: .35em; color: var(--muted); font-size: clamp(8px, .68vw, 12px); line-height: 1.45; }
+    .workflow-panel { padding: clamp(18px, 2vw, 34px); display: grid; grid-template-rows: auto 1fr; gap: 1.3em; }
+    .workflow-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: clamp(10px, 1vw, 17px); }
+    .workflow-step { position: relative; padding: 1.05em 1em .85em; border-radius: .7em; color: var(--ink); overflow: hidden; }
+    .workflow-step::after { content: ""; position: absolute; left: 0; bottom: 0; width: 0; height: 3px; background: var(--gold); }
+    .active .workflow-step::after { animation: stepProgress .7s var(--ease) forwards; animation-delay: calc(420ms + var(--step) * 100ms); }
+    @keyframes stepProgress { to { width: 100%; } }
+    .workflow-step:nth-child(1), .workflow-step:nth-child(4) { background: var(--pale-blue); }
+    .workflow-step:nth-child(2), .workflow-step:nth-child(5) { background: var(--pale-gold); }
+    .workflow-step:nth-child(3), .workflow-step:nth-child(6) { background: var(--pale-teal); }
+    .step-head { display: flex; align-items: center; gap: .6em; }
+    .step-number { color: var(--gold); font-size: .78em; font-weight: 800; }
+    .step-name { color: var(--navy); font-size: clamp(11px, .95vw, 17px); font-weight: 700; }
+    .step-desc { margin-top: .8em; color: var(--ink); font-size: clamp(8px, .67vw, 12px); line-height: 1.55; }
+
+    /* Slide 3 */
+    .data-layout { display: grid; grid-template-columns: .77fr 1.23fr; gap: clamp(18px, 2.2vw, 38px); min-height: 0; }
+    .data-column { display: grid; grid-template-rows: auto 1fr auto; gap: clamp(10px, 1vw, 16px); min-height: 0; }
+    .group-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .65em; }
+    .group-chip { padding: .75em .45em; text-align: center; border-radius: .65em; color: var(--navy); font-size: clamp(9px, .82vw, 14px); font-weight: 700; }
+    .group-chip small { display: block; margin-top: .25em; color: var(--muted); font-size: .68em; font-weight: 500; }
+    .inventory { padding: clamp(15px, 1.5vw, 26px); display: grid; align-content: center; gap: 1.05em; }
+    .inventory-block h3 { font-size: clamp(10px, .86vw, 15px); }
+    .inventory-block p { margin-top: .35em; color: var(--muted); font-size: clamp(8px, .68vw, 12px); line-height: 1.5; }
+    .warning-strip { padding: .8em 1em; border: 1px solid #e4c7bd; border-radius: .65em; background: var(--pale-red); color: var(--brick); font-size: clamp(8px, .68vw, 12px); font-weight: 700; line-height: 1.4; }
+    .pca-panel { padding: clamp(15px, 1.5vw, 26px); display: grid; grid-template-rows: auto 1fr auto; min-height: 0; }
+    .pca-panel figure { min-height: 0; height: 100%; overflow: hidden; }
+    .pca-panel .mini-stats { display: flex; justify-content: space-between; gap: 1em; color: var(--muted); font-size: clamp(7px, .62vw, 11px); }
+
+    /* Slide 4 */
+    .deg-content { display: grid; grid-template-rows: auto 1fr; gap: clamp(10px, 1.1vw, 18px); min-height: 0; }
+    .deg-top { display: grid; grid-template-columns: 1.18fr .82fr; gap: clamp(12px, 1.4vw, 24px); }
+    .metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8em; }
+    .metric-card { padding: .8em 1em; text-align: center; border-radius: .7em; }
+    .metric-card:nth-child(1) { background: var(--pale-gold); }
+    .metric-card:nth-child(2) { background: var(--pale-blue); }
+    .metric-card:nth-child(3) { background: var(--pale-teal); }
+    .metric-label { color: var(--navy); font-size: clamp(8px, .68vw, 12px); font-weight: 700; }
+    .metric-value { margin-top: .12em; color: var(--navy); font-size: clamp(24px, 2.3vw, 42px); font-weight: 800; font-variant-numeric: tabular-nums; }
+    .metric-split { margin-top: .15em; color: var(--muted); font-size: clamp(7px, .58vw, 10px); }
+    .threshold { display: grid; align-content: center; padding: 1em 1.3em; }
+    .threshold-label { color: var(--muted); font-size: clamp(8px, .65vw, 11px); font-weight: 700; }
+    .threshold-value { margin-top: .3em; color: var(--navy); font-size: clamp(14px, 1.35vw, 24px); font-weight: 800; }
+    .threshold-note { margin-top: .4em; color: var(--teal); font-size: clamp(8px, .65vw, 11px); font-weight: 700; }
+    .volcano-panel { padding: clamp(12px, 1.2vw, 20px); display: grid; grid-template-rows: 1fr auto; min-height: 0; }
+    .volcano-panel figure { min-height: 0; overflow: hidden; }
+    .volcano-caption { display: flex; justify-content: space-between; gap: 1em; }
+
+    /* Slide 5 */
+    .robust-layout { display: grid; grid-template-columns: 1fr .94fr; gap: clamp(14px, 1.5vw, 26px); min-height: 0; }
+    .chart-panel { padding: clamp(14px, 1.35vw, 24px); display: grid; grid-template-rows: auto 1fr auto; min-height: 0; }
+    .chart-panel figure { min-height: 0; overflow: hidden; }
+    .chart-note { padding-top: .4em; display: flex; justify-content: space-between; gap: .8em; font-size: clamp(7px, .58vw, 10px); line-height: 1.4; }
+    .similarity-callout { margin-top: .35em; padding: .62em .8em; text-align: center; border-radius: .58em; background: var(--pale-teal); color: var(--teal); font-size: clamp(8px, .68vw, 12px); font-weight: 800; }
+    .full-warning { grid-column: 1 / -1; align-self: end; padding: .65em 1em; text-align: center; border-radius: .6em; background: var(--pale-red); color: var(--brick); font-size: clamp(8px, .66vw, 12px); font-weight: 700; }
+
+    /* Slide 6 */
+    .pathway-layout { display: grid; grid-template-columns: 1.22fr .78fr; gap: clamp(16px, 1.8vw, 30px); min-height: 0; }
+    .heatmap-panel { padding: clamp(13px, 1.3vw, 22px); display: grid; grid-template-rows: auto 1fr auto; min-height: 0; }
+    .heatmap-panel figure { min-height: 0; overflow: hidden; }
+    .ora-note { color: var(--muted); font-size: clamp(7px, .56vw, 10px); line-height: 1.4; }
+    .decision-column { display: grid; grid-template-rows: 1.2fr .83fr auto; gap: clamp(10px, .9vw, 15px); min-height: 0; }
+    .decision-card { padding: clamp(14px, 1.3vw, 22px); }
+    .decision-card ul { margin: .75em 0 0; padding: 0; list-style: none; display: grid; gap: .65em; }
+    .decision-card li { color: var(--ink); font-size: clamp(8px, .68vw, 12px); line-height: 1.45; }
+    .decision-card li::before { content: ""; display: inline-block; width: .48em; height: .48em; margin-right: .55em; border-radius: 50%; background: var(--gold); vertical-align: .08em; }
+    .questions { background: var(--pale-gold); border-color: #e4d2aa; }
+    .limit-card { padding: .75em 1em; text-align: center; background: var(--pale-red); border: 1px solid #e4c7bd; border-radius: .65em; color: var(--brick); font-size: clamp(8px, .67vw, 12px); font-weight: 800; line-height: 1.35; }
+    .next-step { text-align: center; color: var(--navy); font-size: clamp(9px, .78vw, 14px); font-weight: 800; }
+
+    /* Controls */
+    .deck-controls {
+      position: absolute;
+      left: 50%;
+      bottom: clamp(7px, .65vw, 12px);
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      gap: .55em;
+      transform: translateX(-50%);
+      padding: .35em .45em;
+      border: 1px solid rgba(102,115,124,.22);
+      border-radius: 999px;
+      background: rgba(255,255,255,.78);
+      backdrop-filter: blur(10px);
+      opacity: .72;
+      transition: opacity .2s ease;
+    }
+    .deck-controls:hover, .deck-controls:focus-within { opacity: 1; }
+    .control-button {
+      width: 2em;
+      height: 2em;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--navy);
+      cursor: pointer;
+    }
+    .control-button:hover { background: var(--pale-teal); }
+    .control-button:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+    .control-button svg { width: 1em; height: 1em; }
+    .page-indicator { min-width: 3.5em; color: var(--muted); text-align: center; font-size: clamp(8px, .6vw, 11px); font-variant-numeric: tabular-nums; }
+
+    .keyboard-hint {
+      position: absolute;
+      right: clamp(10px, 1.2vw, 22px);
+      bottom: clamp(9px, .8vw, 15px);
+      z-index: 30;
+      color: var(--muted);
+      font-size: clamp(7px, .52vw, 9px);
+      opacity: .62;
+    }
+
+    @media (max-aspect-ratio: 4/3) {
+      .deck-controls { bottom: 5px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+
+    .static-preview .reveal,
+    .static-preview .image-reveal img {
+      opacity: 1 !important;
+      transform: none !important;
+      animation: none !important;
+      clip-path: none !important;
+    }
+
+    .static-preview .orbit-lines line { stroke-dashoffset: 0 !important; animation: none !important; }
+    .static-preview .workflow-step::after { width: 100% !important; animation: none !important; }
+
+    @media print {
+      @page { size: 13.333in 7.5in; margin: 0; }
+      html, body { overflow: visible; background: white; }
+      #hcc-rnaseq-deck { position: static; display: block; background: white; }
+      .deck-shell { width: 100%; height: auto; aspect-ratio: auto; overflow: visible; box-shadow: none; }
+      .deck-shell::before { display: none; }
+      .slide { position: relative; width: 13.333in; height: 7.5in; opacity: 1 !important; visibility: visible !important; transform: none !important; page-break-after: always; }
+      .reveal, .image-reveal img { opacity: 1 !important; transform: none !important; animation: none !important; clip-path: none !important; }
+      .deck-controls, .keyboard-hint, .progress-track { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main id="hcc-rnaseq-deck" aria-label="HCC 候选药物 RNA-seq 下游分析演示">
+    <div class="deck-shell">
+      <div class="progress-track" aria-hidden="true"><div class="progress-fill"></div></div>
+
+      <section class="slide hero-slide active" data-title="封面" aria-hidden="false">
+        <div class="hero-grid">
+          <div>
+            <div class="hero-rule reveal" style="--delay:80ms"></div>
+            <div class="hero-kicker reveal" style="--delay:150ms">DRUGREP · TRANSCRIPTOMICS</div>
+            <h1 class="hero-title reveal" style="--delay:220ms">HCC 候选药物<span class="accent">RNA-seq 下游分析</span></h1>
+            <p class="hero-subtitle reveal" style="--delay:330ms">对 ZZH 前期核心表格的复核、稳健性分析与通路线索</p>
+            <div class="hero-tags reveal" style="--delay:430ms">
+              <span class="tag blue"><span data-count="12">12</span>&nbsp;个样本</span>
+              <span class="tag gold"><span data-count="3">3</span>&nbsp;个处理</span>
+              <span class="tag teal-bg"><span data-count="3">3</span>&nbsp;套定量</span>
+            </div>
+            <p class="boundary reveal" style="--delay:520ms">结论边界：本次仅比较药物扰动，不能据此宣称 HCC 逆转或疗效。</p>
+          </div>
+          <div class="orbit-board panel reveal" style="--delay:260ms">
+            <div class="orbit-title">从样本到可讨论的机制线索</div>
+            <svg class="orbit-lines" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true">
+              <line x1="96" y1="60" x2="292" y2="146" style="--line-index:0"></line>
+              <line x1="96" y1="111" x2="292" y2="146" style="--line-index:1"></line>
+              <line x1="96" y1="162" x2="292" y2="146" style="--line-index:2"></line>
+              <line x1="96" y1="213" x2="292" y2="146" style="--line-index:3"></line>
+            </svg>
+            <div class="orbit-node n1">NC ×3</div>
+            <div class="orbit-node n2">Sora ×3</div>
+            <div class="orbit-node n3">Spi ×3</div>
+            <div class="orbit-node n4">Teg ×3</div>
+            <div class="orbit-hub">QC → DEG<br>→ GSEA / ORA</div>
+          </div>
+        </div>
+        <div class="slide-footer"><span>2026-08-21</span><span>RNA-seq downstream review</span></div>
+      </section>
+
+      <section class="slide" data-title="目录与流程" aria-hidden="true">
+        <header class="slide-header reveal" style="--delay:40ms">
+          <div><div class="eyebrow"><span class="index">02</span><span>DRUGREP · HCC RNA-SEQ</span></div><h2>汇报结构与下游分析路径</h2></div>
+          <div class="kicker">先验证，再解释</div>
+        </header>
+        <div class="outline-layout">
+          <div class="outline-list">
+            <div class="outline-item reveal" style="--delay:120ms"><span class="outline-num">01</span><div><div class="outline-label">数据与质量</div><div class="outline-desc">输入是否完整、样本是否可信</div></div></div>
+            <div class="outline-item reveal" style="--delay:190ms"><span class="outline-num">02</span><div><div class="outline-label">差异表达</div><div class="outline-desc">三种处理的响应幅度与方向</div></div></div>
+            <div class="outline-item reveal" style="--delay:260ms"><span class="outline-num">03</span><div><div class="outline-label">稳健性</div><div class="outline-desc">定量方法与统计方法是否一致</div></div></div>
+            <div class="outline-item reveal" style="--delay:330ms"><span class="outline-num">04</span><div><div class="outline-label">通路与判断</div><div class="outline-desc">候选药物差异、边界、下一步</div></div></div>
+          </div>
+          <div class="workflow-panel panel reveal" style="--delay:160ms">
+            <h3>已完成的下游分析步骤</h3>
+            <div class="workflow-grid">
+              <div class="workflow-step reveal" style="--delay:240ms;--step:1"><div class="step-head"><span class="step-number">1</span><span class="step-name">输入核对</span></div><p class="step-desc">校验和 / 表结构 / 样本对应</p></div>
+              <div class="workflow-step reveal" style="--delay:320ms;--step:2"><div class="step-head"><span class="step-number">2</span><span class="step-name">表达 QC</span></div><p class="step-desc">库大小 / 相关性 / PCA / 热图</p></div>
+              <div class="workflow-step reveal" style="--delay:400ms;--step:3"><div class="step-head"><span class="step-number">3</span><span class="step-name">DEG</span></div><p class="step-desc">RSEM–DESeq2 为主；复现阈值</p></div>
+              <div class="workflow-step reveal" style="--delay:480ms;--step:4"><div class="step-head"><span class="step-number">4</span><span class="step-name">稳健性</span></div><p class="step-desc">Salmon / STAR；edgeR / limma</p></div>
+              <div class="workflow-step reveal" style="--delay:560ms;--step:5"><div class="step-head"><span class="step-number">5</span><span class="step-name">通路</span></div><p class="step-desc">全基因 Wald 排序 GSEA；上下调 ORA</p></div>
+              <div class="workflow-step reveal" style="--delay:640ms;--step:6"><div class="step-head"><span class="step-number">6</span><span class="step-name">横向比较</span></div><p class="step-desc">基因、DEG、NES、leading edge</p></div>
+            </div>
+          </div>
+        </div>
+        <footer class="slide-footer"><span>内部讨论 · 2026-08-21</span></footer>
+      </section>
+
+      <section class="slide" data-title="原始数据与 QC" aria-hidden="true">
+        <header class="slide-header reveal" style="--delay:40ms">
+          <div><div class="eyebrow"><span class="index">03</span><span>DRUGREP · HCC RNA-SEQ</span></div><h2>原始数据与质量控制</h2></div>
+          <div class="kicker">12 样本 · 4 组 · n=3</div>
+        </header>
+        <div class="data-layout">
+          <div class="data-column">
+            <div class="group-row reveal" style="--delay:120ms">
+              <div class="group-chip" style="background:#ecefed">NC<small>3 replicates</small></div>
+              <div class="group-chip" style="background:var(--pale-gold)">Sora<small>3 replicates</small></div>
+              <div class="group-chip" style="background:var(--pale-blue)">Spi<small>3 replicates</small></div>
+              <div class="group-chip" style="background:var(--pale-teal)">Teg<small>3 replicates</small></div>
+            </div>
+            <div class="inventory panel reveal" style="--delay:210ms">
+              <div class="inventory-block"><h3>ZZH 已完成</h3><p>QC / 比对 / 表达定量 / DESeq2 / edgeR / limma</p></div>
+              <div class="inventory-block"><h3>本次复核</h3><p>52 个校验和；样本名一致；计数非负；DEG 阈值完全复现</p></div>
+              <div class="inventory-block"><h3 class="brick">仍缺失</h3><p>FASTQ 级 QC、比对汇总、完整实验与批次信息</p></div>
+            </div>
+            <div class="warning-strip reveal" style="--delay:320ms">注释合并最后一步报错，但核心计数与 DE 表均可用。</div>
+          </div>
+          <div class="pca-panel panel reveal image-reveal" style="--delay:170ms">
+            <h3>PCA：各组分离，组内重复紧密</h3>
+            <figure><img src="assets/pca_groups.png" alt="四个处理组的 PCA 图，三个重复在组内聚集"></figure>
+            <div class="mini-stats"><span>PC1 70.8% · PC2 16.3%</span><span class="teal strong">组内平均相关性 0.9967–0.9981；无离群样本</span></div>
+          </div>
+        </div>
+        <footer class="slide-footer"><span>内部讨论 · 2026-08-21</span></footer>
+      </section>
+
+      <section class="slide" data-title="差异表达" aria-hidden="true">
+        <header class="slide-header reveal" style="--delay:40ms">
+          <div><div class="eyebrow"><span class="index">04</span><span>DRUGREP · HCC RNA-SEQ</span></div><h2>差异表达：Sora 响应最广，Teg 次之，Spi 较窄</h2></div>
+          <div class="kicker">RSEM–DESeq2</div>
+        </header>
+        <div class="deg-content">
+          <div class="deg-top">
+            <div class="metric-row">
+              <div class="metric-card reveal" style="--delay:120ms"><div class="metric-label">Sora vs NC</div><div class="metric-value" data-count="2246">2,246</div><div class="metric-split">1,292 ↑ / 954 ↓</div></div>
+              <div class="metric-card reveal" style="--delay:190ms"><div class="metric-label">Spi vs NC</div><div class="metric-value" data-count="421">421</div><div class="metric-split">192 ↑ / 229 ↓</div></div>
+              <div class="metric-card reveal" style="--delay:260ms"><div class="metric-label">Teg vs NC</div><div class="metric-value" data-count="657">657</div><div class="metric-split">442 ↑ / 215 ↓</div></div>
+            </div>
+            <div class="threshold panel reveal" style="--delay:220ms"><span class="threshold-label">判定阈值</span><span class="threshold-value">FDR &lt; 0.05 且 |log2FC| ≥ 1</span><span class="threshold-note">三套定量的存档 DEG 均被精确复现</span></div>
+          </div>
+          <div class="volcano-panel panel reveal image-reveal" style="--delay:330ms">
+            <figure><img src="assets/volcano_triptych.png" alt="Sora、Spi、Teg 相对 NC 的三幅火山图"></figure>
+            <figcaption class="volcano-caption"><span class="brick">DEG 数量反映扰动幅度，不直接代表药物优劣。</span><span class="teal strong">Sora 的 DEG 数约为 Teg 的 3.4×、Spi 的 5.3×</span></figcaption>
+          </div>
+        </div>
+        <footer class="slide-footer"><span>内部讨论 · 2026-08-21</span></footer>
+      </section>
+
+      <section class="slide" data-title="稳健性与相似性" aria-hidden="true">
+        <header class="slide-header reveal" style="--delay:40ms">
+          <div><div class="eyebrow"><span class="index">05</span><span>DRUGREP · HCC RNA-SEQ</span></div><h2>稳健性与候选药物相似性</h2></div>
+          <div class="kicker">方向一致性优先</div>
+        </header>
+        <div class="robust-layout">
+          <div class="chart-panel panel reveal image-reveal" style="--delay:140ms">
+            <h3>跨定量 / 统计方法的 log2FC 一致性</h3>
+            <figure><img src="assets/method_robustness.png" alt="四类方法比较的 log2FC Spearman 相关系数"></figure>
+            <div class="chart-note"><span class="teal strong">共享 DEG 方向一致率：100%</span><span class="muted">Hallmark NES：ρ=0.989–0.999</span></div>
+          </div>
+          <div class="chart-panel panel reveal image-reveal" style="--delay:240ms">
+            <h3>相对 Sora 的扰动相似性</h3>
+            <figure><img src="assets/sorafenib_similarity.png" alt="Sora 与 Spi、Teg 在基因统计量、通路和 DEG 上的相似性"></figure>
+            <div class="similarity-callout">Teg 与 Sora 更接近：ρ<sub>gene</sub>=0.568；ρ<sub>pathway</sub>=0.722</div>
+          </div>
+          <div class="full-warning reveal" style="--delay:480ms">相似性仅描述转录组扰动，不是疗效分数；DEG 重叠也不能替代全基因与通路比较。</div>
+        </div>
+        <footer class="slide-footer"><span>内部讨论 · 2026-08-21</span></footer>
+      </section>
+
+      <section class="slide" data-title="通路与下一步" aria-hidden="true">
+        <header class="slide-header reveal" style="--delay:40ms">
+          <div><div class="eyebrow"><span class="index">06</span><span>DRUGREP · HCC RNA-SEQ</span></div><h2>通路线索、判断边界与下一步</h2></div>
+          <div class="kicker">与 ZZH 对齐后推进</div>
+        </header>
+        <div class="pathway-layout">
+          <div class="heatmap-panel panel reveal image-reveal" style="--delay:140ms">
+            <h3>Hallmark GSEA：候选药物呈现不同程序</h3>
+            <figure><img src="assets/hallmark_heatmap.png" alt="十条关键 Hallmark 通路在 Sora、Spi 和 Teg 中的 NES 热图"></figure>
+            <p class="ora-note">ORA 印证：三组 TNF 相关下调；Sora 凝血/补体上调；Teg 缺氧相关上调</p>
+          </div>
+          <div class="decision-column">
+            <div class="decision-card panel reveal" style="--delay:230ms">
+              <h3>当前判断</h3>
+              <ul>
+                <li><strong>Teg：</strong>MYC / E2F / G2M 负向富集；伴随缺氧、糖酵解正向富集</li>
+                <li><strong>Spi：</strong>更偏 TNF/NF-κB、IL/JAK/STAT 与应激程序</li>
+                <li class="teal"><strong>优先区分：</strong>Teg 的 Sora-like 收敛 vs Spi 的差异机制</li>
+              </ul>
+            </div>
+            <div class="decision-card questions panel reveal" style="--delay:330ms">
+              <h3>需要 ZZH 确认</h3>
+              <ul>
+                <li>Spi / Teg 全名；细胞系、剂量、处理时长</li>
+                <li>基因组/注释版本、建库与链特异性</li>
+                <li>批次设计；FastQC/MultiQC 与比对汇总</li>
+              </ul>
+            </div>
+            <div class="limit-card reveal" style="--delay:430ms">无肿瘤–正常签名：不能建立 HCC 逆转或疗效结论</div>
+          </div>
+        </div>
+        <div class="next-step reveal" style="--delay:520ms">建议下一步：用 qPCR / 蛋白与增殖、凋亡、细胞周期表型验证 leading-edge 基因。</div>
+        <footer class="slide-footer"><span>内部讨论 · 结论需结合实验元数据</span></footer>
+      </section>
+
+      <nav class="deck-controls" aria-label="幻灯片控制">
+        <button class="control-button" id="previous-slide" type="button" aria-label="上一页" title="上一页（←）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <span class="page-indicator" aria-live="polite"><span id="current-page">1</span> / 6</span>
+        <button class="control-button" id="next-slide" type="button" aria-label="下一页" title="下一页（→ / 空格）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="control-button" id="fullscreen" type="button" aria-label="进入全屏" title="全屏（F）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </nav>
+      <div class="keyboard-hint">← → / Space 翻页 · F 全屏</div>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      if (new URLSearchParams(location.search).has('static')) {
+        document.documentElement.classList.add('static-preview');
+      }
+      const root = document.getElementById('hcc-rnaseq-deck');
+      const shell = root.querySelector('.deck-shell');
+      const slides = [...root.querySelectorAll('.slide')];
+      const progress = root.querySelector('.progress-fill');
+      const currentPage = document.getElementById('current-page');
+      const previousButton = document.getElementById('previous-slide');
+      const nextButton = document.getElementById('next-slide');
+      const fullscreenButton = document.getElementById('fullscreen');
+      let current = Math.min(Math.max((parseInt(location.hash.slice(1), 10) || 1) - 1, 0), slides.length - 1);
+      let wheelLocked = false;
+      let touchStartX = null;
+
+      function animateCounts(slide) {
+        slide.querySelectorAll('[data-count]').forEach((element) => {
+          const target = Number(element.dataset.count);
+          const decimals = Number(element.dataset.decimals || 0);
+          const duration = 760;
+          const start = performance.now();
+          element.textContent = '0';
+          function tick(now) {
+            const elapsed = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - elapsed, 3);
+            const value = target * eased;
+            element.textContent = decimals
+              ? value.toFixed(decimals)
+              : Math.round(value).toLocaleString('zh-CN');
+            if (elapsed < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+        });
+      }
+
+      function showSlide(index) {
+        current = Math.min(Math.max(index, 0), slides.length - 1);
+        slides.forEach((slide, slideIndex) => {
+          slide.classList.remove('active', 'before');
+          slide.setAttribute('aria-hidden', 'true');
+          if (slideIndex < current) slide.classList.add('before');
+        });
+        const target = slides[current];
+        void target.offsetWidth;
+        target.classList.add('active');
+        target.setAttribute('aria-hidden', 'false');
+        progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+        currentPage.textContent = String(current + 1);
+        previousButton.disabled = current === 0;
+        nextButton.disabled = current === slides.length - 1;
+        document.title = `${target.dataset.title} · HCC RNA-seq`;
+        history.replaceState(null, '', `#${current + 1}`);
+        animateCounts(target);
+      }
+
+      function next() { showSlide(current + 1); }
+      function previous() { showSlide(current - 1); }
+
+      async function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          await shell.requestFullscreen?.();
+        } else {
+          await document.exitFullscreen?.();
+        }
+      }
+
+      previousButton.addEventListener('click', previous);
+      nextButton.addEventListener('click', next);
+      fullscreenButton.addEventListener('click', toggleFullscreen);
+
+      document.addEventListener('fullscreenchange', () => {
+        const active = Boolean(document.fullscreenElement);
+        fullscreenButton.setAttribute('aria-label', active ? '退出全屏' : '进入全屏');
+        fullscreenButton.title = active ? '退出全屏（F / Esc）' : '全屏（F）';
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (['ArrowRight', 'PageDown', ' '].includes(event.key)) {
+          event.preventDefault();
+          next();
+        } else if (['ArrowLeft', 'PageUp'].includes(event.key)) {
+          event.preventDefault();
+          previous();
+        } else if (event.key === 'Home') {
+          event.preventDefault();
+          showSlide(0);
+        } else if (event.key === 'End') {
+          event.preventDefault();
+          showSlide(slides.length - 1);
+        } else if (event.key.toLowerCase() === 'f') {
+          event.preventDefault();
+          toggleFullscreen();
+        }
+      });
+
+      shell.addEventListener('wheel', (event) => {
+        if (wheelLocked || Math.abs(event.deltaY) < 24) return;
+        wheelLocked = true;
+        event.deltaY > 0 ? next() : previous();
+        setTimeout(() => { wheelLocked = false; }, 620);
+      }, { passive: true });
+
+      shell.addEventListener('touchstart', (event) => {
+        touchStartX = event.changedTouches[0].clientX;
+      }, { passive: true });
+
+      shell.addEventListener('touchend', (event) => {
+        if (touchStartX === null) return;
+        const distance = event.changedTouches[0].clientX - touchStartX;
+        touchStartX = null;
+        if (Math.abs(distance) < 48) return;
+        distance < 0 ? next() : previous();
+      }, { passive: true });
+
+      window.addEventListener('hashchange', () => {
+        const requested = (parseInt(location.hash.slice(1), 10) || 1) - 1;
+        if (requested !== current) showSlide(requested);
+      });
+
+      showSlide(current);
+    })();
+  </script>
+</body>
+</html>
