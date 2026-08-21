@@ -1,0 +1,31 @@
+{
+  "project": "DrugRep HCC RNA-seq downstream analysis",
+  "archive_destination": "data/raw/mentor_preanalysis_20260724",
+  "primary_quantifier": "RSEM",
+  "quantifiers": ["RSEM", "Salmon", "STAR"],
+  "groups": ["NC", "Sora", "Spi", "Teg"],
+  "contrasts": {
+    "SoravsNC": {"treatment": "Sora", "control": "NC"},
+    "SpivsNC": {"treatment": "Spi", "control": "NC"},
+    "TegvsNC": {"treatment": "Teg", "control": "NC"}
+  },
+  "deg": {"padj": 0.05, "abs_log2fc": 1.0},
+  "qc": {"top_variable_genes": 500, "outlier_correlation_floor": 0.95},
+  "gsea": {
+    "seed": 20260820,
+    "permutations": 1000,
+    "threads": 4,
+    "min_size": 15,
+    "max_size": 500,
+    "main_fdr": 0.05,
+    "exploratory_fdr": 0.25
+  },
+  "mapping": {"minimum_coverage": 0.85},
+  "gene_sets": [
+    "MSigDB_Hallmark_2020",
+    "KEGG_2021_Human",
+    "Reactome_2022",
+    "GO_Biological_Process_2025"
+  ],
+  "hallmark_library": "MSigDB_Hallmark_2020"
+}

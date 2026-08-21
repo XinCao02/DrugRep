@@ -1,0 +1,10 @@
+quantifier	contrast	tested_genes	padj_missing	deg_total	deg_up	deg_down	archived_deg_reproduced
+RSEM	SoravsNC	20603	1603	2246	1292	954	True
+RSEM	SpivsNC	20603	5995	421	192	229	True
+RSEM	TegvsNC	20603	4399	657	442	215	True
+Salmon	SoravsNC	20623	1612	2263	1313	950	True
+Salmon	SpivsNC	20623	5608	433	202	231	True
+Salmon	TegvsNC	20623	4410	659	443	216	True
+STAR	SoravsNC	23737	1381	2569	1517	1052	True
+STAR	SpivsNC	23737	7364	543	280	263	True
+STAR	TegvsNC	23737	5983	763	523	240	True

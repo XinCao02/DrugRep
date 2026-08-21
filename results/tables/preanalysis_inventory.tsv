@@ -1,0 +1,6 @@
+stage	mentor_log_status	files_in_core_archive	assessment
+FASTQ quality control	Completed	Pipeline/cluster logs only	Raw FastQC/MultiQC artifacts were not supplied; cannot independently audit read-level QC.
+Alignment	Completed	No BAM or alignment summaries	Alignment was logged as complete but mapping metrics are unavailable in this archive.
+Expression quantification	Completed	RSEM, Salmon, and STAR raw and normalized matrices	Core matrices are present and pass dimensions, sample, nonnegativity, manifest, and checksum checks.
+Differential expression	Completed	9 DESeq2 full, 9 filtered, and 18 edgeR/limma tables	All archived DEG sets are exactly reproduced from the full tables at |log2FC| >= 1 and FDR < 0.05.
+Gene annotation post-processing	Failed: unexpected else	Combined annotation CSVs intentionally excluded	Core expression/DE results remain usable; the local workflow performs an independent versioned gene-ID mapping.

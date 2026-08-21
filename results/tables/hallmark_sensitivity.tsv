@@ -1,0 +1,7 @@
+contrast	comparison	nes_spearman	exploratory_pathways	exploratory_sign_agreement
+SoravsNC	RSEM vs Salmon	0.9982713085234093	43	1.0
+SoravsNC	RSEM vs STAR	0.9932773109243697	45	1.0
+SpivsNC	RSEM vs Salmon	0.9984633853541416	39	1.0
+SpivsNC	RSEM vs STAR	0.9887635054021608	43	1.0
+TegvsNC	RSEM vs Salmon	0.9990396158463385	44	1.0
+TegvsNC	RSEM vs STAR	0.9924129651860745	46	1.0
