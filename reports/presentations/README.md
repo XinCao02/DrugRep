@@ -12,8 +12,8 @@ Advisor-facing slide decks and their reproducible build scripts live here.
 Run from the project root:
 
 ```bash
-.venv/bin/python presentations/build_rnaseq_deck.py
-python3 presentations/make_standalone_html.py
+.venv/bin/python reports/presentations/build_rnaseq_deck.py
+python3 reports/presentations/make_standalone_html.py
 ```
 
 For a remote workspace, the simplest option is to download
@@ -30,7 +30,7 @@ python3 -m http.server 8000
 
 If the browser is running on the same machine, open:
 
-`http://127.0.0.1:8000/presentations/HCC_RNAseq_downstream_advisor_20260821.html`
+`http://127.0.0.1:8000/reports/presentations/HCC_RNAseq_downstream_advisor_20260821.html`
 
 If the HTTP server is running on a remote machine, create an SSH tunnel from a
 terminal on the local computer. The SSH port must be supplied with `-p` (do not
@@ -42,7 +42,7 @@ ssh -p 22222 -N -L 18000:127.0.0.1:8000 cx@120.76.203.127
 
 Then open:
 
-`http://127.0.0.1:18000/presentations/HCC_RNAseq_downstream_advisor_20260821.html`
+`http://127.0.0.1:18000/reports/presentations/HCC_RNAseq_downstream_advisor_20260821.html`
 
 If a local SSH proxy configuration incorrectly redirects the connection to a
 closed proxy port, bypass the SSH configuration for this connection:

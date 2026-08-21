@@ -24,8 +24,8 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Inches, Pt
 
 
-ROOT = Path(__file__).resolve().parents[1]
-PRESENTATION_DIR = ROOT / "presentations"
+ROOT = Path(__file__).resolve().parents[2]
+PRESENTATION_DIR = Path(__file__).resolve().parent
 ASSET_DIR = PRESENTATION_DIR / "assets"
 OUTPUT = PRESENTATION_DIR / "HCC_RNAseq_downstream_advisor_20260821.pptx"
 

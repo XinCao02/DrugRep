@@ -28,8 +28,7 @@ flowchart LR
 - `data/`: local raw data, compact references, and processed analysis inputs.
 - `analysis/`: configuration and the reproducible local pipeline.
 - `results/`: generated figures, tables, and the run manifest.
-- `reports/`: concise task reports that interpret the generated evidence.
-- `presentations/`: advisor-facing decks and their reproducible build scripts.
+- `reports/`: concise task reports plus advisor-facing materials under `reports/presentations/`.
 
 Each important working directory contains a short README describing what belongs there. Large raw and reference files are intentionally ignored by Git and are recreated from the source archive or recorded reference downloads.
 

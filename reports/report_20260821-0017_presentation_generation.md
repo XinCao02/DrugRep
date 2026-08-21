@@ -2,7 +2,7 @@
 
 Created a six-slide, primarily Chinese PowerPoint for discussion with ZZH:
 
-[`HCC_RNAseq_downstream_advisor_20260821.pptx`](../presentations/HCC_RNAseq_downstream_advisor_20260821.pptx)
+[`HCC_RNAseq_downstream_advisor_20260821.pptx`](presentations/HCC_RNAseq_downstream_advisor_20260821.pptx)
 
 ## Slide structure
 
@@ -25,5 +25,5 @@ The deck uses a restrained academic style with an ivory background, navy/teal ty
 Rebuild with:
 
 ```bash
-.venv/bin/python presentations/build_rnaseq_deck.py
+.venv/bin/python reports/presentations/build_rnaseq_deck.py
 ```
